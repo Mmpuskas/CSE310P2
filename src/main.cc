@@ -1,10 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "../include/program.h"
+#include "init.cc"
 
-int main() 
+int main(void) 
 {
-	const char* hi = sayHi();	
-
-	printf("%s\n", hi);
+	init();
 }

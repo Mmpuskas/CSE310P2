@@ -1,0 +1,25 @@
+5
+11
+18
+allocate INT a 1
+allocate INT b 2
+allocate CHAR s 4 "h"
+allocate CHAR s2 2 "!"
+add a 15
+add a b
+map
+print a
+strcat s "i"
+print s
+strcat s s2
+print s
+strcat s b
+map
+free s
+print s
+free b
+map
+print b
+allocate INT c 10
+compact
+map

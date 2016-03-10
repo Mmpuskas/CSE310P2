@@ -27,6 +27,8 @@ flags = [
         '/usr/include/llvm-3.6/..', 
         '-isystem',
         '/usr/include',
+        '-isystem',
+        '/home/michael/code/git-repos/CSE310P2/include',
         ]
 
 
