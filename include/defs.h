@@ -23,3 +23,12 @@ struct bstNode{
     int left;  // Left child
     int right; // Right child
 };
+
+//Heap Function
+struct heapEntry* initHeap(int size);
+void max_heap_insert(struct heapEntry* heapArr, int blockSize, int offset);
+struct heapEntry heap_extract_max(struct heapEntry* heapArr);
+void max_heapify(struct heapEntry* heapArr, int index);
+void setHeapSize(int size);
+void build_max_heap(struct heapEntry* heapArr);
+

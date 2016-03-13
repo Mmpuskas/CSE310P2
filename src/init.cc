@@ -20,7 +20,7 @@
  */
 void init(void)
 {
-	char* linePointer = (char*) malloc(150); //A typical long line in the sample is 96 chars, 150 should be safe. 
+//	char* linePointer = (char*) malloc(150); //A typical long line in the sample is 96 chars, 150 should be safe. 
 	
 }
 

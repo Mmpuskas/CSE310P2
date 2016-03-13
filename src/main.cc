@@ -1,6 +1,6 @@
-#include "init.cc"
+#include "defs.h"
 
 int main(void) 
 {
-	init();
+	testInit();
 }
