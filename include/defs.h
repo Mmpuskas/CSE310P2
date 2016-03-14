@@ -24,11 +24,17 @@ struct bstNode{
     int right; // Right child
 };
 
-//Heap Function
+//Heap Functions
 struct heapEntry* initHeap(int size);
-void max_heap_insert(struct heapEntry* heapArr, int blockSize, int offset);
-struct heapEntry heap_extract_max(struct heapEntry* heapArr);
-void max_heapify(struct heapEntry* heapArr, int index);
+void maxHeapInsert(struct heapEntry* heapArr, int blockSize, int offset);
+struct heapEntry heapExtractMax(struct heapEntry* heapArr);
+void maxHeapify(struct heapEntry* heapArr, int index);
 void setHeapSize(int size);
-void build_max_heap(struct heapEntry* heapArr);
+void buildMaxHeap(struct heapEntry* heapArr);
 
+//Hash Table Functions
+void setNumEntries(int num);
+int hashFunc(char const* symbol, int prime);
+void hashTableInsert(struct symbolTableEntry* symTable, int prime, char const* symbol, int type, int offs, int bytes);
+void hashTableRemove(struct symbolTableEntry* symTable, int prime, char const* symbol);
+int hashTableSearch(struct symbolTableEntry* symTable, int prime, char const* symbol);
