@@ -250,3 +250,94 @@ TEST_CASE("Hash Functions")
 		REQUIRE(index == 10);
 	}
 }
+
+TEST_CASE("Control Path Tests")
+{
+	int prime = 11;
+	int memSize = pow(2,5);
+	char* mem = initMem(memSize);	
+
+    	struct heapEntry* freeHeap = initHeap(8); 
+	maxHeapInsert(freeHeap, memSize, 0);
+
+	struct symbolTableEntry* symTable = (struct symbolTableEntry*) malloc(prime * sizeof(symbolTableEntry));
+	for(int i = 0; i < prime; i++)
+		symTable[i].type = -1;
+
+	SECTION("Init Memory")
+	{
+		map(mem, memSize); 
+		REQUIRE(mem);
+	}
+
+	SECTION("Allocate INT")
+	{
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].offset == 0);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].noBytes == 4);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].type == INT);
+		REQUIRE((unsigned int) mem[0] == 3);
+		REQUIRE(heapExtractMax(freeHeap).blockSize == 28);
+	}
+	
+	SECTION("Allocate TWO INTs (Oh dang)")
+	{
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 7);
+
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].offset == 0);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].noBytes == 4);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].type == INT);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "b")].offset == 4);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "b")].noBytes == 4);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "b")].type == INT);
+		REQUIRE((unsigned int) mem[0] == 3);
+		REQUIRE((unsigned int) mem[4] == 7);
+	}
+
+	SECTION("Allocate CHAR")
+	{
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 2, "h");
+		map(mem, memSize); 
+
+		//REQUIRE(getVar(mem, "s") == "h");	
+	}
+
+	/*
+	SECTION("Add with Scalar")
+	{
+	
+	}
+
+	SECTION("Add with 2 Vars")
+	{
+	
+	}
+
+	SECTION("String Concat")
+	{
+	
+	}
+
+	SECTION("Free INT")
+	{
+	
+	}
+
+	SECTION("Free CHAR")
+	{
+	
+	}
+
+	SECTION("Compact 2")
+	{
+	
+	}
+
+	SECTION("Compact 4")
+	{
+	
+	}
+	*/
+}

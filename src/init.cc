@@ -9,6 +9,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "defs.h"
+
+int prime = 0;
+int numCom = 0;
+
+// Input: Size of memory space
+// Output: Pointer to beginning of memory space
+char* initMem(int memSize)
+{
+	char* memPointer = (char*) calloc(memSize, sizeof(char*));	
+
+	return memPointer;
+}
 
 /* init()
  *

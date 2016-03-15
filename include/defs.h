@@ -38,3 +38,9 @@ int hashFunc(char const* symbol, int prime);
 void hashTableInsert(struct symbolTableEntry* symTable, int prime, char const* symbol, int type, int offs, int bytes);
 void hashTableRemove(struct symbolTableEntry* symTable, int prime, char const* symbol);
 int hashTableSearch(struct symbolTableEntry* symTable, int prime, char const* symbol);
+
+//Control Path Functions
+char* initMem(int memSize);
+void myMallocInt(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, unsigned int value);
+void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, int len, char const* value);
+void map(char* mem, int len);
