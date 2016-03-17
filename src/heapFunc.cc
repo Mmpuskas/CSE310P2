@@ -13,6 +13,12 @@ void setHeapSize(int size)
 {
 	heapSize = size;
 }
+// Input: void
+// Output: The size of the heap
+int getHeapSize()
+{
+	return heapSize;
+}
 // Input: The desired size of the heap
 // Output: A pointer to a heapEntry array with appropriate size while excluding A[0]
 struct heapEntry* initHeap(int size)

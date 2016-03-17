@@ -249,15 +249,16 @@ TEST_CASE("Hash Functions")
 
 		REQUIRE(index == 10);
 	}
+	free(symTable);
 }
 
 TEST_CASE("Control Path Tests")
 {
 	int prime = 11;
 	int memSize = pow(2,5);
+	int heapSize = 8;
 	char* mem = initMem(memSize);	
-
-    	struct heapEntry* freeHeap = initHeap(8); 
+    	struct heapEntry* freeHeap = initHeap(heapSize); 
 	maxHeapInsert(freeHeap, memSize, 0);
 
 	struct symbolTableEntry* symTable = (struct symbolTableEntry*) malloc(prime * sizeof(symbolTableEntry));
@@ -266,11 +267,10 @@ TEST_CASE("Control Path Tests")
 
 	SECTION("Init Memory")
 	{
-		map(mem, memSize); 
 		REQUIRE(mem);
 	}
 
-	SECTION("Allocate INT")
+	SECTION("Allocate Small INT")
 	{
 		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
 
@@ -278,11 +278,22 @@ TEST_CASE("Control Path Tests")
 		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].noBytes == 4);
 		REQUIRE(symTable[hashTableSearch(symTable, prime, "a")].type == INT);
 		REQUIRE((unsigned int) mem[0] == 3);
+		REQUIRE((unsigned int) mem[1] == 0);
 		REQUIRE(heapExtractMax(freeHeap).blockSize == 28);
 	}
 	
+	SECTION("Allocate Large INT")
+	{
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 12345);
+
+		REQUIRE((unsigned int) mem[0] == 57);
+		REQUIRE((unsigned int) mem[1] == 48);
+		REQUIRE(heapExtractMax(freeHeap).blockSize == 28);
+	}
+
 	SECTION("Allocate TWO INTs (Oh dang)")
 	{
+		setNumEntries(0);
 		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
 		myMallocInt(mem, symTable, freeHeap, prime, "b", 7);
 
@@ -298,46 +309,180 @@ TEST_CASE("Control Path Tests")
 
 	SECTION("Allocate CHAR")
 	{
+		setNumEntries(0);
 		myMallocChar(mem, symTable, freeHeap, prime, "s", 2, "h");
-		map(mem, memSize); 
 
-		//REQUIRE(getVar(mem, "s") == "h");	
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "s")].offset == 0);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "s")].noBytes == 2);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "s")].type == CHAR);
+		REQUIRE(strcmp(((char *) &mem[0]), "h") == 0);	
 	}
 
-	/*
+	SECTION("Allocate 2 CHARs")
+	{
+		setNumEntries(0);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 2, "h");
+		myMallocChar(mem, symTable, freeHeap, prime, "p", 4, "hey");
+
+		REQUIRE(strcmp(((char *) &mem[0]), "h") == 0);	
+		REQUIRE(strcmp(((char *) &mem[4]), "hey") == 0);	
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "s")].offset == 0);
+		REQUIRE(symTable[hashTableSearch(symTable, prime, "p")].offset == 4);
+	}
+
+	SECTION("Allocate mix of CHAR and INT")
+	{
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 12345);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 2, "h");
+		myMallocChar(mem, symTable, freeHeap, prime, "p", 4, "hey");
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+	
+		REQUIRE((unsigned int) mem[0] == 57);
+		REQUIRE((unsigned int) mem[1] == 48);
+		REQUIRE(strcmp(((char *) &mem[4]), "h") == 0);
+		REQUIRE(strcmp(((char *) &mem[8]), "hey") == 0);	
+		REQUIRE((unsigned int) mem[12] == 3);
+	}
+
+	SECTION("Free Single")
+	{
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 12345);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 12345); //To avoid empty err
+		REQUIRE(hashTableSearch(symTable, prime, "a") == 9);
+		
+		myFree(mem, symTable, freeHeap, prime, "a");
+		REQUIRE(hashTableSearch(symTable, prime, "a") == -1);
+	}
+
 	SECTION("Add with Scalar")
 	{
-	
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		REQUIRE((unsigned int) mem[0] == 3);
+
+		myAdd(mem, symTable, prime, "a", "3");	
+		REQUIRE((unsigned int) mem[0] == 6);
 	}
 
 	SECTION("Add with 2 Vars")
 	{
-	
-	}
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		REQUIRE((unsigned int) mem[0] == 3);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 4);
+		REQUIRE((unsigned int) mem[4] == 4);
 
-	SECTION("String Concat")
-	{
-	
-	}
-
-	SECTION("Free INT")
-	{
-	
-	}
-
-	SECTION("Free CHAR")
-	{
-	
+		myAdd(mem, symTable, prime, "a", "b");	
+		REQUIRE((unsigned int) mem[0] == 7);
 	}
 
 	SECTION("Compact 2")
 	{
-	
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 4);
+		myFree(mem, symTable, freeHeap, prime, "a");
+		myFree(mem, symTable, freeHeap, prime, "b");
+		
+		myCompact(freeHeap);
+
+		struct heapEntry max;
+		max = heapExtractMax(freeHeap);
+		REQUIRE(max.blockSize == 32);
 	}
 
-	SECTION("Compact 4")
+	SECTION("Compact 2 Complex")
 	{
-	
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 4);
+		myMallocInt(mem, symTable, freeHeap, prime, "c", 5);
+		myMallocInt(mem, symTable, freeHeap, prime, "d", 6);
+		myFree(mem, symTable, freeHeap, prime, "a");
+		myFree(mem, symTable, freeHeap, prime, "b");
+		
+		myCompact(freeHeap);
+
+		struct heapEntry max;
+		max = heapExtractMax(freeHeap);
+		REQUIRE(max.blockSize == 16);
+		max = heapExtractMax(freeHeap);
+		REQUIRE(max.blockSize == 8);
 	}
-	*/
+
+	SECTION("Compact Multiple")
+	{
+		setNumEntries(0);
+		myMallocInt(mem, symTable, freeHeap, prime, "a", 3);
+		myMallocInt(mem, symTable, freeHeap, prime, "b", 4);
+		myMallocInt(mem, symTable, freeHeap, prime, "c", 5);
+		myMallocInt(mem, symTable, freeHeap, prime, "d", 6);
+		myMallocInt(mem, symTable, freeHeap, prime, "e", 7);
+		myMallocInt(mem, symTable, freeHeap, prime, "f", 8);
+		myFree(mem, symTable, freeHeap, prime, "b");
+		myFree(mem, symTable, freeHeap, prime, "c");
+		myFree(mem, symTable, freeHeap, prime, "e");
+		myFree(mem, symTable, freeHeap, prime, "f");
+
+		struct heapEntry max;
+
+		myCompact(freeHeap);
+
+		max = heapExtractMax(freeHeap);
+		REQUIRE(max.blockSize == 16);
+		max = heapExtractMax(freeHeap);
+		REQUIRE(max.blockSize == 8);
+	}
+
+	SECTION("String Concat Constant")
+	{
+		setNumEntries(0);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 10, "hett");
+		
+		myStrCat(mem, symTable, prime, "s", "\"llo\"");
+	
+		int indexOfBaseInMem = symTable[hashTableSearch(symTable, prime, "s")].offset;
+		REQUIRE(strcmp(((char *) &mem[indexOfBaseInMem]), "hettllo") == 0);
+	}
+
+	SECTION("String Concat Constant Longer")
+	{
+		setNumEntries(0);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 20, "hello");
+		
+		myStrCat(mem, symTable, prime, "s", "\" there!\"");
+	
+		int indexOfBaseInMem = symTable[hashTableSearch(symTable, prime, "s")].offset;
+		REQUIRE(strcmp(((char *) &mem[indexOfBaseInMem]), "hello there!") == 0);
+	}
+
+	SECTION("String Concat Var")
+	{
+		setNumEntries(0);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 6, "he");
+		myMallocChar(mem, symTable, freeHeap, prime, "p", 6, "llo");
+		
+		myStrCat(mem, symTable, prime, "s", "p");
+
+		int indexOfBaseInMem = symTable[hashTableSearch(symTable, prime, "s")].offset;
+		REQUIRE(strcmp(((char *) &mem[indexOfBaseInMem]), "hello") == 0);
+	}
+
+	SECTION("String Concat Var Longer")
+	{
+		setNumEntries(0);
+		myMallocChar(mem, symTable, freeHeap, prime, "s", 18, "hello");
+		myMallocChar(mem, symTable, freeHeap, prime, "p", 12, " there!");
+		
+		myStrCat(mem, symTable, prime, "s", "p");
+
+		int indexOfBaseInMem = symTable[hashTableSearch(symTable, prime, "s")].offset;
+		REQUIRE(strcmp(((char *) &mem[indexOfBaseInMem]), "hello there!") == 0);
+	}
+
+	free(mem);
+	free(freeHeap);
+	free(symTable);
 }
