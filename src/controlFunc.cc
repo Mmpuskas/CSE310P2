@@ -7,13 +7,22 @@
 // Output: Prints a map of the memspace, no return
 void map(char* mem, int len)
 {
-	for(int i = 0; i < len; i++)
-		printf("%02x ", mem[i]);	
-	printf("\n");
+	printf("Hex Map\n");
 	for(int i = 0; i < len; i++)
 	{
-		if(i > 0 && mem[i - 1] != 0 && mem[i] == 0)
-			printf("%c%c ", '\\', '0');
+		if(i % 31 == 0)
+			printf("\n");	
+
+		printf("%02x ", mem[i]);	
+	}
+	printf("\n\nChar Map\n");
+	for(int i = 0; i < len; i++)
+	{
+		if(i % 31 == 0)
+			printf("\n");	
+
+		if((mem[i] < ':' && mem[i] > '/') || mem[i] == 0)
+			printf("%02x ", mem[i]);	
 		else
 			printf("%2c ", mem[i]);	
 	}
@@ -38,7 +47,7 @@ void myMallocInt(char* mem, struct symbolTableEntry* symTable, struct heapEntry*
 	}	
 	else
 	{
-		printf("ERROR: Not enough space to allocate variable.");
+		printf("ERROR: Not enough space to allocate variable.\n");
 		return;
 	}
 }
@@ -64,10 +73,7 @@ void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry
 		maxHeapInsert(freeHeap, topOfHeap.blockSize - adjustedLen, topOfHeap.offset + adjustedLen);
 	}	
 	else
-	{
-		printf("ERROR: Not enough space to allocate variable.");
-		return;
-	}
+		printf("ERROR: Not enough space to allocate variable.\n");
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name
 // Output: Var is removed from symbol table if it was found, else no change. 
@@ -80,6 +86,8 @@ void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* free
 	{
 		int indexInMem = symTable[indexOfSymbol].offset;
 		int sizeInMem = symTable[indexOfSymbol].noBytes;
+		if(sizeInMem % 4 != 0)
+			sizeInMem += (4 - (sizeInMem % 4));
 
 		//Return space to free heap
 		maxHeapInsert(freeHeap, sizeInMem, indexInMem);	
@@ -91,9 +99,7 @@ void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* free
 		hashTableRemove(symTable, prime, varName);
 	}
 	else
-	{
-		printf("ERROR: Cannot free variable that has not been allocated");	
-	}
+		printf("ERROR: Cannot free variable that has not been allocated\n");	
 }
 // Input: Pointer to memspace, pointer to symbol table, var name, var name / scalar
 // Output: Value of scalar or second var is added to first
@@ -119,22 +125,18 @@ void myAdd(char* mem, struct symbolTableEntry* symTable, int prime, char const* 
 				*((unsigned int*) &mem[symTable[varIndex1].offset]) += *((unsigned int*) &mem[symTable[varIndex2].offset]);
 			}
 			else
-				printf("ERROR: RHS does not exist in symbol table, or is not of type INT");	
+				printf("ERROR: RHS does not exist in symbol table, or is not of type INT\n");	
 		}
 	}
 	else
-		printf("ERROR: LHS does not exist in symbol table, or is not of type INT");	
-
+		printf("ERROR: LHS does not exist in symbol table, or is not of type INT\n");
 }
 // Input: Pointer to free heap
 // Output: Adjacent free blocks have been coalesced
 void myCompact(struct heapEntry* freeHeap)
 {
 	int numCompacted = 0;
-	int debug = 0;
 	int heapSize = getHeapSize();
-	if(debug == 1)
-		printf("\nHeapSize = %d\n", heapSize);
 	struct heapEntry* heapArr = (struct heapEntry*) malloc(heapSize * sizeof(struct heapEntry));	
 	
 	//Move to new array
@@ -153,54 +155,31 @@ void myCompact(struct heapEntry* freeHeap)
 			}	
 	
 	//Coalesce
-	if(debug == 1)
-	{
-		printf("Offsets: ");
-		for(int i = 0; i < heapSize; i++)
-			printf("%d ", heapArr[i].offset);
-		printf("\n");
-		printf("BlockSizes: ");
-		for(int i = 0; i < heapSize; i++)
-			printf("%d ", heapArr[i].blockSize);
-		printf("\n");
-	}
 	for(int i = 0; i < heapSize; i++)
 	{
 		if(heapArr[i].offset + heapArr[i].blockSize == heapArr[i+1].offset)
 		{
-			if(debug == 1)
-				printf("Compacting i = %d, i+1 = %d\n", i, i+1);
 			heapArr[i].blockSize += heapArr[i+1].blockSize;
 			heapArr[i+1].offset = -1;		
 			numCompacted++;
-			
-			if(debug == 1)
-			{
-				printf("\nAfter Compacting:\n");
-				printf("Offsets: ");
-				for(int i = 0; i < heapSize; i++)
-					printf("%d ", heapArr[i].offset);
-				printf("\n");
-				printf("BlockSizes: ");
-				for(int i = 0; i < heapSize; i++)
-					printf("%d ", heapArr[i].blockSize);
-				printf("\n");
-			}
 		}
 	}
-	if(debug == 1)
-		printf("\n");
 	
 	//Push back into heap
 	for(int i = 0; i < heapSize; i++)
 		if(heapArr[i].offset != -1)
 		{
-			if(debug == 1)
-				printf("Pushing back into heap: %d\n", i);	
 			maxHeapInsert(freeHeap, heapArr[i].blockSize, heapArr[i].offset);	
 		}
 	if(numCompacted > 0)
 		myCompact(freeHeap);	
+	else
+	{
+		printf("Listing free blocks sorted by offset:\n");	
+		for(int i = 0; i < heapSize; i++)
+			printf("Offset: %d BlockSize: %d\n", heapArr[i].offset, heapArr[i].blockSize);
+		printf("\n");
+	}
 
 	free(heapArr);
 }
@@ -228,10 +207,10 @@ void myStrCatConst(char* mem, struct symbolTableEntry* symTable, int prime, char
 			mem[indexOfBaseInMem + lenBase + lenToAdd] = STRTERM; //Null terminator
 		}
 		else
-			printf("ERROR: LHS insufficient length to perform strcat");
+			printf("ERROR: LHS insufficient length to perform strcat\n");
 	}
 	else
-		printf("ERROR: LHS not found in symbol table or not type CHAR");
+		printf("ERROR: LHS not found in symbol table or not type CHAR\n");
 }
 // Input: Relevant data structures, prime, name of base var, name of var to add
 // Output: var is concatenated to sBase in mem
@@ -261,15 +240,13 @@ void myStrCatVar(char* mem, struct symbolTableEntry* symTable, int prime, char c
 				mem[indexOfBaseInMem + lenBase + lenToAdd] = STRTERM; //Null terminator
 			}
 			else
-				printf("ERROR: LHS insufficient length to perform strcat");
-		
+				printf("ERROR: LHS insufficient length to perform strcat\n");
 		}
 		else
-			printf("ERROR: RHS not found in symbol table or not type CHAR");
+			printf("ERROR: RHS not found in symbol table or not type CHAR\n");
 	}
 	else
-		printf("ERROR: LHS not found in symbol table or not type CHAR");
-
+		printf("ERROR: LHS not found in symbol table or not type CHAR\n");
 }
 // Input: Relevant data structures, prime, name of base var, literal or name of var to add
 // Output: sToAdd is concatenated to sBase in mem
@@ -283,7 +260,7 @@ void myStrCat(char* mem, struct symbolTableEntry* symTable, int prime, char cons
 		strcpy(newToAdd, sToAdd);
 		for(int i = 0; i < len - 1; i++)
 			newToAdd[i] = newToAdd[i+1];
-		newToAdd[len - 2] = STRTERM; //Possibly dubious, more unit tests for this
+		newToAdd[len - 2] = STRTERM;
 
 		myStrCatConst(mem, symTable, prime, sBase, newToAdd);
 
@@ -299,11 +276,16 @@ void printVar(char* mem, struct symbolTableEntry* symTable, int prime, const cha
 	int indexOfSymbol = 0;
 	indexOfSymbol = hashTableSearch(symTable, prime, varName);
 
-	if(symTable[indexOfSymbol].type == CHAR)
-		printf("%s\n", ((char*) &mem[symTable[indexOfSymbol].offset]));
-	else if (symTable[indexOfSymbol].type == INT)
-		printf("%d\n", mem[symTable[indexOfSymbol].offset]);
+	if(indexOfSymbol != -1 && symTable[indexOfSymbol].type != -2)
+	{
+		if(symTable[indexOfSymbol].type == CHAR)
+			printf("%s = %s\n", varName, ((char*) &mem[symTable[indexOfSymbol].offset]));
+		else if (symTable[indexOfSymbol].type == INT)
+			printf("%s = %d\n", varName,  mem[symTable[indexOfSymbol].offset]);
+		else
+			printf("ERROR: Type is not CHAR or INT\n");
+	}
 	else
-		printf("ERROR: Type is not CHAR or INT");
+		printf("ERROR: Symbol not found.\n");
 }
 

@@ -1,0 +1,31 @@
+7
+31
+28
+allocate CHAR string1 22 "hello "
+allocate CHAR string2 6 "world"
+strcat string1 string2
+map
+print string1
+allocate INT value1 10
+allocate INT value2 20
+add value1 value2
+add value1 80
+map
+print value1
+allocate CHAR fox 50 "The quick brown fox jumps over the "
+allocate CHAR dog 10 "lazy dog"
+allocate CHAR exclaim 5 "!"
+strcat fox dog
+strcat fox exclaim
+map
+print fox
+free value1
+free string1
+compact
+free string2
+compact
+map
+free fox
+free dog
+free exclaim
+map

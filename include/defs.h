@@ -50,3 +50,8 @@ void myCompact(struct heapEntry* freeHeap);
 int getHeapSize();
 void myStrCat(char* mem, struct symbolTableEntry* symTable, int prime, char const* sBase, char const* sToAdd);
 void printVar(char* mem, struct symbolTableEntry* symTable, int prime, const char* varName);
+
+//Support Functions
+void readLine(char *linePointer);
+void init(void);
+

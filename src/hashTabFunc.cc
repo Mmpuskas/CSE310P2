@@ -66,7 +66,7 @@ void hashTableRemove(struct symbolTableEntry* symTable, int prime, char const* s
 
 		numEntries--;
 
-		if(index != -1)
+		if(symTable[index].type != -1)
 			symTable[index].type = -2;
 		else
 			printf("ERROR: Symbol not found");
