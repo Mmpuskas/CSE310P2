@@ -10,7 +10,7 @@ void map(char* mem, int len)
 	printf("Hex Map\n");
 	for(int i = 0; i < len; i++)
 	{
-		if(i % 31 == 0)
+		if(i % 32 == 0)
 			printf("\n");	
 
 		printf("%02x ", mem[i]);	
@@ -18,7 +18,7 @@ void map(char* mem, int len)
 	printf("\n\nChar Map\n");
 	for(int i = 0; i < len; i++)
 	{
-		if(i % 31 == 0)
+		if(i % 32 == 0)
 			printf("\n");	
 
 		if((mem[i] < ':' && mem[i] > '/') || mem[i] == 0)
@@ -47,8 +47,8 @@ void myMallocInt(char* mem, struct symbolTableEntry* symTable, struct heapEntry*
 	}	
 	else
 	{
+		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
 		printf("ERROR: Not enough space to allocate variable.\n");
-		return;
 	}
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
@@ -66,14 +66,20 @@ void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry
 		hashTableInsert(symTable, prime, varName, CHAR, topOfHeap.offset, len);
 
 		//Place the variable in the memspace
-		strcpy(((char*) &mem[topOfHeap.offset]), value);
-		mem[topOfHeap.offset + len] = STRTERM; //Null terminator
+		if(value)
+		{
+			strcpy(((char*) &mem[topOfHeap.offset]), value);
+			mem[topOfHeap.offset + len] = STRTERM; //Null terminator
+		}
 
 		//Update the free heap
 		maxHeapInsert(freeHeap, topOfHeap.blockSize - adjustedLen, topOfHeap.offset + adjustedLen);
 	}	
 	else
+	{
+		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
 		printf("ERROR: Not enough space to allocate variable.\n");
+	}
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name
 // Output: Var is removed from symbol table if it was found, else no change. 

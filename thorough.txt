@@ -1,0 +1,50 @@
+7
+13
+47
+allocate CHAR s1 200 "fail"
+allocate CHAR s1 20 " a"
+allocate CHAR s2 4 "b "
+allocate CHAR s3 5 " c "
+allocate CHAR s4 8 " d d "
+allocate CHAR s5 4 ""
+allocate CHAR s6 16 "           "
+allocate INT i1 5
+allocate INT i2 7
+add x y
+add x 3
+add x s1
+add s1 x
+add x i1
+add i1 x
+add s1 s2
+add s1 3
+add i1 s1
+add s1 i1
+add i1 i1
+add i1 i2
+add i1 13
+print i1
+strcat x y
+strcat x "a"
+strcat x i1
+strcat i1 x
+strcat x s1
+strcat s1 x
+strcat i1 i2
+strcat i1 "a"
+strcat s1 i1
+strcat i1 s1
+strcat s1 s1
+strcat s1 s2
+strcat s1 ""
+strcat s1 " "
+strcat s1 "1 "
+strcat s1 " 2"
+strcat s1 " 3 "
+strcat s1 " 4 4 "
+strcat s1 s6
+print s1
+free s3
+free s4
+free x
+free s3

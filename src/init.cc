@@ -138,7 +138,7 @@ void init(void)
 		else if(strcmp(command, "strcat") == 0)
 		{
 			char* varName = strtok(NULL, delim);
-			char* varToAdd = strtok(NULL, delim);
+			char* varToAdd = strtok(NULL, "\n");
 			printf("Concatenating %s to %s\n", varToAdd, varName);
 
 			myStrCat(mem, symTable, prime, varName, varToAdd);
