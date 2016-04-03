@@ -89,9 +89,8 @@ void init(void)
 			else if(strcmp(command, "BST") == 0)
 			{
 				char* varName = strtok(NULL, delim);
-				printf(KBLU "Allocating BST \"%s\"\n" RESET, varName);
-
 				int val = atoi(strtok(NULL, delim));
+				printf(KBLU "Allocating BST \"%s\" with value \"%d\"\n" RESET, varName, val);
 				
 				myMallocBST(mem, symTable, freeHeap, prime, varName, val);
 			}

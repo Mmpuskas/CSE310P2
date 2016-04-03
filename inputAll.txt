@@ -1,0 +1,25 @@
+8
+31
+22
+allocate CHAR s1 6 "hello "
+allocate CHAR s2 13 "world"
+strcat s1 s2
+map
+allocate INT n1 13
+allocate INT n2 90
+add n1 n2
+add n1 10
+map
+free s2
+free n1
+compact
+allocate BST root 13
+insert root 2
+insert root 15
+insert root 3
+map
+free root
+map
+free s1
+compact
+map

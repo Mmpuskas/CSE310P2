@@ -1,0 +1,20 @@
+8
+31
+17
+allocate BST root 13
+insert root 2
+insert root 15
+insert root 5
+map
+insert root 1
+insert root 27
+insert root 3
+map
+insert root 12
+insert root 99
+insert root 14
+insert root 33
+map
+print root
+free root
+map

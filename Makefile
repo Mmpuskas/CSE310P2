@@ -27,7 +27,7 @@ HEADERS := $(INC_DIR)/*.h
 
 # Run the program
 run: program
-	./program < input2.txt
+	./program < input-BST.txt
 
 # Run the tests
 test: $(TEST_DIR)/tester

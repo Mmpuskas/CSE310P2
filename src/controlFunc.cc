@@ -39,7 +39,7 @@ void map(char* mem, int memLen, struct symbolTableEntry* symTable, int tableLen)
 			printf(KMAG "%02X " RESET,(unsigned char) mem[i]);	
 
 	}
-	printf("|");
+	printf(KCYN "|" RESET);
 	printf("\n");
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
