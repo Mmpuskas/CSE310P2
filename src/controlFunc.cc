@@ -3,42 +3,41 @@
 #include <string.h>
 #include "defs.h"
 
-// Input: Pointer to memspace, length of memspace
+// Input: Pointer to memspace, length of memspace, pointer to symbol table, length of symbol table.
 // Output: Prints a map of the memspace, no return
-void map(char* mem, int len)
+void map(char* mem, int memLen, struct symbolTableEntry* symTable, int tableLen)
 {
 	int lineWidth = 16;
+	int* typesToDisplay = (int*) calloc(memLen, sizeof(int)); //Matrix that says whether to display as hex or ascii. Hex is assumed (type = 0)
 
-	printf("Hex Map\n");
-	printf("       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |");
-	for(int i = 0; i < len; i++)
+	//Set chars to display as ascii
+	for(int i = 0; i < tableLen; i++)
+		if(symTable[i].type == 1)
+		{
+			for(int j = symTable[i].offset; j < symTable[i].offset + symTable[i].noBytes - 1; j++)
+				typesToDisplay[j] = 1;	
+			typesToDisplay[symTable[i].offset + symTable[i].noBytes - 1] = 3;
+		}
+	
+	printf(KCYN "       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |" RESET);
+	for(int i = 0; i < memLen; i++)
 	{
 		if(i % lineWidth == 0 && i > 0)
-			printf("|\n0x%04X | ", i);	
+			printf(KCYN "|\n0x%04X | " RESET, i);	
 		else if(i % lineWidth == 0)
-			printf("\n0x%04X | ", i);	
+			printf(KCYN "\n0x%04X | " RESET, i);	
 		else if(i % 4 == 0)
-			printf("| ");
+			printf(KCYN "| " RESET);
 
-		printf("%02X ",(unsigned char) mem[i]);	
-	}
-	printf("|");
-
-	printf("\n\nChar Map\n");
-	printf("       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |");
-	for(int i = 0; i < len; i++)
-	{
-		if(i % lineWidth == 0 && i > 0)
-			printf("|\n0x%04X | ", i);	
-		else if(i % lineWidth == 0)
-			printf("\n0x%04X | ", i);	
-		else if(i % 4 == 0)
-			printf("| ");
-
-		if((mem[i] < ':' && mem[i] > '/') || mem[i] == 0)
-			printf("%02x ", mem[i]);	
+		if(typesToDisplay[i] == 1 && mem[i] == 0)
+			printf("   ");
+		else if(typesToDisplay[i] == 1 || mem[i] == '~')
+			printf(KMAG "%-2c " RESET, mem[i]);	
+		else if(typesToDisplay[i] == 3)
+			printf(KMAG "\\0 " RESET);
 		else
-			printf("%2c ", mem[i]);	
+			printf(KMAG "%02X " RESET,(unsigned char) mem[i]);	
+
 	}
 	printf("|");
 	printf("\n");
@@ -63,7 +62,7 @@ void myMallocInt(char* mem, struct symbolTableEntry* symTable, struct heapEntry*
 	else
 	{
 		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
-		printf("ERROR: Not enough space to allocate variable.\n");
+		printf(KRED "ERROR: Not enough space to allocate variable.\n" RESET);
 	}
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
@@ -93,7 +92,7 @@ void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry
 	else
 	{
 		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
-		printf("ERROR: Not enough space to allocate variable.\n");
+		printf(KRED "ERROR: Not enough space to allocate variable.\n" RESET);
 	}
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
@@ -118,7 +117,7 @@ void myMallocBST(char* mem, struct symbolTableEntry* symTable, struct heapEntry*
 	else
 	{
 		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
-		printf("ERROR: Not enough space to allocate variable.\n");
+		printf(KRED "ERROR: Not enough space to allocate variable.\n" RESET);
 	}
 }
 // Input: A bstNode's root in memory
@@ -180,7 +179,7 @@ void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* free
 		}
 	}
 	else
-		printf("ERROR: Cannot free variable that has not been allocated\n");	
+		printf(KRED "ERROR: Cannot free variable that has not been allocated\n" RESET);	
 }
 // Input: Pointer to memspace, pointer to symbol table, var name, var name / scalar
 // Output: Value of scalar or second var is added to first
@@ -206,11 +205,11 @@ void myAdd(char* mem, struct symbolTableEntry* symTable, int prime, char const* 
 				*((unsigned int*) &mem[symTable[varIndex1].offset]) += *((unsigned int*) &mem[symTable[varIndex2].offset]);
 			}
 			else
-				printf("ERROR: RHS does not exist in symbol table, or is not of type INT\n");	
+				printf(KRED "ERROR: RHS does not exist in symbol table, or is not of type INT\n" RESET);	
 		}
 	}
 	else
-		printf("ERROR: LHS does not exist in symbol table, or is not of type INT\n");
+		printf(KRED "ERROR: LHS does not exist in symbol table, or is not of type INT\n" RESET);
 }
 // Input: Pointer to free heap
 // Output: Adjacent free blocks have been coalesced
@@ -256,9 +255,9 @@ void myCompact(struct heapEntry* freeHeap)
 		myCompact(freeHeap);	
 	else
 	{
-		printf("Listing free blocks sorted by offset:\n");	
+		printf(KBLU "Listing free blocks sorted by offset:\n" RESET);	
 		for(int i = 0; i < heapSize; i++)
-			printf("Offset: %d BlockSize: %d\n", heapArr[i].offset, heapArr[i].blockSize);
+			printf(KBLU "Offset: " KMAG "%d " KBLU "BlockSize: " KMAG "%d\n" RESET, heapArr[i].offset, heapArr[i].blockSize);
 		printf("\n");
 	}
 
@@ -288,10 +287,10 @@ void myStrCatConst(char* mem, struct symbolTableEntry* symTable, int prime, char
 			mem[indexOfBaseInMem + lenBase + lenToAdd] = STRTERM; //Null terminator
 		}
 		else
-			printf("ERROR: LHS insufficient length to perform strcat\n");
+			printf(KRED "ERROR: LHS insufficient length to perform strcat\n" RESET);
 	}
 	else
-		printf("ERROR: LHS not found in symbol table or not type CHAR\n");
+		printf(KRED "ERROR: LHS not found in symbol table or not type CHAR\n" RESET);
 }
 // Input: Relevant data structures, prime, name of base var, name of var to add
 // Output: var is concatenated to sBase in mem
@@ -321,13 +320,13 @@ void myStrCatVar(char* mem, struct symbolTableEntry* symTable, int prime, char c
 				mem[indexOfBaseInMem + lenBase + lenToAdd] = STRTERM; //Null terminator
 			}
 			else
-				printf("ERROR: LHS insufficient length to perform strcat\n");
+				printf(KRED "ERROR: LHS insufficient length to perform strcat\n" RESET);
 		}
 		else
-			printf("ERROR: RHS not found in symbol table or not type CHAR\n");
+			printf(KRED "ERROR: RHS not found in symbol table or not type CHAR\n" RESET);
 	}
 	else
-		printf("ERROR: LHS not found in symbol table or not type CHAR\n");
+		printf(KRED "ERROR: LHS not found in symbol table or not type CHAR\n" RESET);
 }
 // Input: Relevant data structures, prime, name of base var, literal or name of var to add
 // Output: sToAdd is concatenated to sBase in mem
@@ -356,7 +355,7 @@ void printTreeNode(char* mem, struct bstNode* root)
 {
 	if(root->left != -1)
 		printTreeNode(mem, ((struct bstNode*) &mem[root->left]));
-	printf("%d\t", root->key);
+	printf(KMAG "%d\t" RESET, root->key);
 	if(root->right != -1)
 		printTreeNode(mem, ((struct bstNode*) &mem[root->right]));
 }
@@ -370,19 +369,19 @@ void printVar(char* mem, struct symbolTableEntry* symTable, int prime, const cha
 	if(indexOfSymbol != -1 && symTable[indexOfSymbol].type != -2)
 	{
 		if(symTable[indexOfSymbol].type == CHAR)
-			printf("%s = %s\n", varName, ((char*) &mem[symTable[indexOfSymbol].offset]));
+			printf(KCYN "%s = " KMAG "%s\n" RESET, varName, ((char*) &mem[symTable[indexOfSymbol].offset]));
 		else if (symTable[indexOfSymbol].type == INT)
-			printf("%s = %d\n", varName,  mem[symTable[indexOfSymbol].offset]);
+			printf(KCYN "%s = " KMAG "%d\n" RESET, varName,  mem[symTable[indexOfSymbol].offset]);
 		else if (symTable[indexOfSymbol].type == BST)
 		{
 			printTreeNode(mem, ((struct bstNode*) &mem[symTable[indexOfSymbol].offset]));
 			printf("\n");
 		}
 		else
-			printf("ERROR: Type is not CHAR or INT\n");
+			printf(KRED "ERROR: Type is not CHAR or INT\n" RESET);
 	}
 	else
-		printf("ERROR: Symbol not found.\n");
+		printf(KRED "ERROR: Symbol not found.\n" RESET);
 }
 // Input: Relevant data structures, prime, value of node to insert
 // Output: If there is room in the memspace, the node is added to the BST. 
@@ -438,9 +437,9 @@ void bstInsert(char* mem, struct symbolTableEntry* symTable, struct heapEntry* f
 		else
 		{
 			maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
-			printf("ERROR: Not enough space to allocate variable.\n");
+			printf(KRED "ERROR: Not enough space to allocate variable.\n" RESET);
 		}
 	}
 	else
-		printf("ERROR: Can only insert into BST.\n");
+		printf(KRED "ERROR: Can only insert into BST.\n" RESET);
 }

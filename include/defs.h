@@ -54,7 +54,7 @@ char* initMem(int memSize);
 void myMallocInt(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, unsigned int value);
 void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, int len, char const* value);
 void myMallocBST(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, unsigned int value);
-void map(char* mem, int len);
+void map(char* mem, int memLen, struct symbolTableEntry* symTable, int tableLen);
 void freeBST(char* mem, struct heapEntry* freeHeap, int indexInMem);
 void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName);
 void myAdd(char* mem, struct symbolTableEntry* symTable, int prime, char const* varName, char const* vName);

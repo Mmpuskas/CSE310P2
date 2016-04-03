@@ -69,7 +69,7 @@ void init(void)
 			if(strcmp(command, "INT") == 0)
 			{
 				char* varName = strtok(NULL, delim);
-				printf("Allocating Integer \"%s\"\n", varName);
+				printf(KBLU "Allocating Integer \"%s\"\n" RESET, varName);
 
 				int val = atoi(strtok(NULL, delim));
 				
@@ -78,7 +78,7 @@ void init(void)
 			else if(strcmp(command, "CHAR") == 0)
 			{
 				char* varName = strtok(NULL, delim);
-				printf("Allocating String \"%s\"\n", varName);
+				printf(KBLU "Allocating String \"%s\"\n" RESET, varName);
 
 				int len = atoi(strtok(NULL, delim));
 				
@@ -89,7 +89,7 @@ void init(void)
 			else if(strcmp(command, "BST") == 0)
 			{
 				char* varName = strtok(NULL, delim);
-				printf("Allocating BST \"%s\"\n", varName);
+				printf(KBLU "Allocating BST \"%s\"\n" RESET, varName);
 
 				int val = atoi(strtok(NULL, delim));
 				
@@ -97,40 +97,40 @@ void init(void)
 			}
 			else
 			{
-				printf("ERROR: Improper type on allocate command");
+				printf(KRED "ERROR: Improper type on allocate command" RESET);
 				return;
 			}
-			printf("Allocate Complete.\n\n");
+			printf(KYEL "Allocate Complete.\n\n" RESET);
 		}
 		else if(strcmp(command, "free") == 0)
 		{
 			char* varName = strtok(NULL, delim);
-			printf("Deallocating variable \"%s\"\n", varName);
+			printf(KBLU "Deallocating variable \"%s\"\n" RESET, varName);
 		
 			myFree(mem, symTable, freeHeap, prime, varName);
 			
-			printf("Deallocate Complete.\n\n");
+			printf(KYEL "Deallocate Complete.\n\n" RESET);
 		}
 		else if(strcmp(command, "add") == 0)
 		{
 			char* varName = strtok(NULL, delim);
 			char* varToAdd = strtok(NULL, delim);
-			printf("Adding %s to %s\n", varToAdd, varName);
+			printf(KBLU "Adding %s to %s\n" RESET, varToAdd, varName);
 
 			myAdd(mem, symTable, prime, varName, varToAdd);
 
-			printf("Add Complete\n\n");	
+			printf(KYEL "Add Complete\n\n" RESET);	
 		}
 		else if(strcmp(command, "map") == 0)
 		{
-			printf("Mapping the memory space:\n\n");
-			map(mem, memSize);
+			printf(KBLU "Memory Map\n" RESET);
+			map(mem, memSize, symTable, prime);
 			printf("\n\n");
 		}
 		else if(strcmp(command, "print") == 0)
 		{
 			char* varName = strtok(NULL, delim);
-			printf("Printing variable \"%s\"\n", varName);
+			printf(KBLU "Printing variable \"%s\"\n" RESET, varName);
 
 			printVar(mem, symTable, prime, varName);
 		
@@ -138,30 +138,30 @@ void init(void)
 		}
 		else if(strcmp(command, "compact") == 0)
 		{
-			printf("Compacting the freespace heap:\n");
+			printf(KBLU "Compacting the freespace heap:\n" RESET);
 
 			myCompact(freeHeap);
 		
-			printf("Compaction Complete\n\n");
+			printf(KYEL "Compaction Complete\n\n" RESET);
 		}
 		else if(strcmp(command, "strcat") == 0)
 		{
 			char* varName = strtok(NULL, delim);
 			char* varToAdd = strtok(NULL, "\n");
-			printf("Concatenating %s to %s\n", varToAdd, varName);
+			printf(KBLU "Concatenating %s to %s\n" RESET, varToAdd, varName);
 
 			myStrCat(mem, symTable, prime, varName, varToAdd);
 
-			printf("Concatenation complete\n\n");	
+			printf(KYEL "Concatenation complete\n\n" RESET);	
 		}
 		else if(strcmp(command, "insert") == 0)
 		{
 			char* rootName = strtok(NULL, delim);
 			int value = atoi(strtok(NULL, "\n"));
 		
-			printf("Inserting \"%d\" into BST \"%s\".\n", value, rootName);
+			printf(KBLU "Inserting \"%d\" into BST \"%s\".\n" RESET, value, rootName);
 			bstInsert(mem, symTable, freeHeap, prime, rootName, value);
-			printf("Insert complete\n\n");
+			printf(KYEL "Insert complete\n\n" RESET);
 		}
 	}
 }
