@@ -3,8 +3,7 @@
 #include <math.h>
 #include "defs.h"
 
-int k = 5;
-int maxHeapSize = pow(2, k)/4;
+int maxHeapSize = 0;
 int heapSize = 0;
 
 // Input: Size to set heap to
@@ -24,6 +23,7 @@ int getHeapSize()
 struct heapEntry* initHeap(int size)
 {
 	heapSize = 0;
+	maxHeapSize = size;
 	struct heapEntry* freeHeap = (struct heapEntry*) malloc((size + 1) * sizeof(struct heapEntry));	
 	return freeHeap;
 }

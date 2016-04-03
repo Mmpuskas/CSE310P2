@@ -27,7 +27,7 @@ HEADERS := $(INC_DIR)/*.h
 
 # Run the program
 run: program
-	./program < thorough.txt
+	./program < tInput.txt
 
 # Run the tests
 test: $(TEST_DIR)/tester

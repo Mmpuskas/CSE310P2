@@ -32,8 +32,8 @@ char* initMem(int memSize)
  */
 void init(void)
 {
-	printf("\n## Welcome to myMemoryHandler. ##\n");
-	printf("Initializing Variables\n");
+	printf(KBLU "\n## Welcome to myMemoryHandler. ##\n\n" RESET);
+	printf(KRED "Initializing Variables\n");
 	char* linePointer = (char*) malloc(150); //A typical long line in the sample is 96 chars, 150 should be safe. 
 	
 	//Read first two lines
@@ -57,7 +57,7 @@ void init(void)
 	int numCommands = atoi(linePointer);
 	char delim[2] = " ";
 
-	printf("\nVariables Initialized. Processing %d Commands:\n", numCommands);
+	printf("Variables Initialized. Processing %d Commands:\n\n" RESET, numCommands);
 	for (int i = 0; i < numCommands; i++)
 	{
 		readLine(linePointer);
@@ -71,9 +71,9 @@ void init(void)
 				char* varName = strtok(NULL, delim);
 				printf("Allocating Integer \"%s\"\n", varName);
 
-				int len = atoi(strtok(NULL, delim));
+				int val = atoi(strtok(NULL, delim));
 				
-				myMallocInt(mem, symTable, freeHeap, prime, varName, len);
+				myMallocInt(mem, symTable, freeHeap, prime, varName, val);
 			}
 			else if(strcmp(command, "CHAR") == 0)
 			{
@@ -85,6 +85,15 @@ void init(void)
 				char* sValue = strtok(NULL, "\"");
 				
 				myMallocChar(mem, symTable, freeHeap, prime, varName, len, sValue);
+			}
+			else if(strcmp(command, "BST") == 0)
+			{
+				char* varName = strtok(NULL, delim);
+				printf("Allocating BST \"%s\"\n", varName);
+
+				int val = atoi(strtok(NULL, delim));
+				
+				myMallocBST(mem, symTable, freeHeap, prime, varName, val);
 			}
 			else
 			{
@@ -114,7 +123,7 @@ void init(void)
 		}
 		else if(strcmp(command, "map") == 0)
 		{
-			printf("Mapping the memory space:\n");
+			printf("Mapping the memory space:\n\n");
 			map(mem, memSize);
 			printf("\n\n");
 		}
@@ -125,7 +134,7 @@ void init(void)
 
 			printVar(mem, symTable, prime, varName);
 		
-			printf("Print Complete.\n\n");
+			printf("\n\n");
 		}
 		else if(strcmp(command, "compact") == 0)
 		{
@@ -144,6 +153,15 @@ void init(void)
 			myStrCat(mem, symTable, prime, varName, varToAdd);
 
 			printf("Concatenation complete\n\n");	
+		}
+		else if(strcmp(command, "insert") == 0)
+		{
+			char* rootName = strtok(NULL, delim);
+			int value = atoi(strtok(NULL, "\n"));
+		
+			printf("Inserting \"%d\" into BST \"%s\".\n", value, rootName);
+			bstInsert(mem, symTable, freeHeap, prime, rootName, value);
+			printf("Insert complete\n\n");
 		}
 	}
 }

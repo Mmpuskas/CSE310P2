@@ -7,25 +7,40 @@
 // Output: Prints a map of the memspace, no return
 void map(char* mem, int len)
 {
-	printf("Hex Map\n");
-	for(int i = 0; i < len; i++)
-	{
-		if(i % 32 == 0)
-			printf("\n");	
+	int lineWidth = 16;
 
-		printf("%02x ", mem[i]);	
-	}
-	printf("\n\nChar Map\n");
+	printf("Hex Map\n");
+	printf("       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |");
 	for(int i = 0; i < len; i++)
 	{
-		if(i % 32 == 0)
-			printf("\n");	
+		if(i % lineWidth == 0 && i > 0)
+			printf("|\n0x%04X | ", i);	
+		else if(i % lineWidth == 0)
+			printf("\n0x%04X | ", i);	
+		else if(i % 4 == 0)
+			printf("| ");
+
+		printf("%02X ",(unsigned char) mem[i]);	
+	}
+	printf("|");
+
+	printf("\n\nChar Map\n");
+	printf("       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |");
+	for(int i = 0; i < len; i++)
+	{
+		if(i % lineWidth == 0 && i > 0)
+			printf("|\n0x%04X | ", i);	
+		else if(i % lineWidth == 0)
+			printf("\n0x%04X | ", i);	
+		else if(i % 4 == 0)
+			printf("| ");
 
 		if((mem[i] < ':' && mem[i] > '/') || mem[i] == 0)
 			printf("%02x ", mem[i]);	
 		else
 			printf("%2c ", mem[i]);	
 	}
+	printf("|");
 	printf("\n");
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
@@ -81,6 +96,54 @@ void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry
 		printf("ERROR: Not enough space to allocate variable.\n");
 	}
 }
+// Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name, length of string, value
+// Output: Memspace contains value, symbol table contains symbol and location, space of variable is removed from heap
+void myMallocBST(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName, unsigned int value)
+{
+	struct heapEntry topOfHeap = heapExtractMax(freeHeap);
+	
+	if(topOfHeap.blockSize >= 12)
+	{
+		//Update the symbol table
+		hashTableInsert(symTable, prime, varName, BST, topOfHeap.offset, 12);
+
+		//Place the variable in the memspace
+		((struct bstNode*) &mem[topOfHeap.offset])->key = value; 
+		((struct bstNode*) &mem[topOfHeap.offset])->left = -1; 
+		((struct bstNode*) &mem[topOfHeap.offset])->right = -1; 
+
+		//Update the free heap
+		maxHeapInsert(freeHeap, topOfHeap.blockSize - 12, topOfHeap.offset + 12);
+	}	
+	else
+	{
+		maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
+		printf("ERROR: Not enough space to allocate variable.\n");
+	}
+}
+// Input: A bstNode's root in memory
+// Output: Navigates the BST to free every node. Root still exists in symbol table.
+void freeBST(char* mem, struct heapEntry* freeHeap, int indexInMem)
+{
+	int leftChild = 0;
+	int rightChild = 0;
+	leftChild = ((struct bstNode*) &mem[indexInMem])->left;
+	rightChild = ((struct bstNode*) &mem[indexInMem])->right;
+
+	//Recurse on children
+	if(leftChild != -1)
+		freeBST(mem, freeHeap, leftChild);
+	if(rightChild != -1)
+		freeBST(mem, freeHeap, rightChild);
+
+	//Return space to free heap
+	maxHeapInsert(freeHeap, 12, indexInMem);
+
+	//Re-write the free space in mem
+	for(int i = indexInMem; i < indexInMem+12; i++)
+		mem[i] = '~';
+
+}
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name
 // Output: Var is removed from symbol table if it was found, else no change. 
 void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, char const* varName)
@@ -90,19 +153,31 @@ void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* free
 
 	if(indexOfSymbol != -1)
 	{
-		int indexInMem = symTable[indexOfSymbol].offset;
-		int sizeInMem = symTable[indexOfSymbol].noBytes;
-		if(sizeInMem % 4 != 0)
-			sizeInMem += (4 - (sizeInMem % 4));
+		if(symTable[indexOfSymbol].type == 2) //Type is BST
+		{
+			//Call recursive BST free
+			freeBST(mem, freeHeap, symTable[indexOfSymbol].offset);
+			
+			//Remove from the symbol table
+			hashTableRemove(symTable, prime, varName);
+		}
+		else //Type is INT or CHAR
+		{
+			int indexInMem = symTable[indexOfSymbol].offset;
+			int sizeInMem = symTable[indexOfSymbol].noBytes;
+			if(sizeInMem % 4 != 0)
+				sizeInMem += (4 - (sizeInMem % 4));
 
-		//Return space to free heap
-		maxHeapInsert(freeHeap, sizeInMem, indexInMem);	
+			//Return space to free heap
+			maxHeapInsert(freeHeap, sizeInMem, indexInMem);	
 
-		//Clear the free space
-		for(int i = indexInMem; i < indexInMem + sizeInMem; i++)
-			mem[i] = '~';
+			//Re-write the free space in mem
+			for(int i = indexInMem; i < indexInMem + sizeInMem; i++)
+				mem[i] = '~';
 
-		hashTableRemove(symTable, prime, varName);
+			//Remove from the symbol table
+			hashTableRemove(symTable, prime, varName);
+		}
 	}
 	else
 		printf("ERROR: Cannot free variable that has not been allocated\n");	
@@ -275,6 +350,16 @@ void myStrCat(char* mem, struct symbolTableEntry* symTable, int prime, char cons
 	else
 		myStrCatVar(mem, symTable, prime, sBase, sToAdd);
 }
+// Input: A bstNode's root in memory
+// Output: Prints the in-order traversal of the tree 
+void printTreeNode(char* mem, struct bstNode* root)
+{
+	if(root->left != -1)
+		printTreeNode(mem, ((struct bstNode*) &mem[root->left]));
+	printf("%d\t", root->key);
+	if(root->right != -1)
+		printTreeNode(mem, ((struct bstNode*) &mem[root->right]));
+}
 // Input: Relevant data structures, prime, name of var to print
 // Output: prints value of var
 void printVar(char* mem, struct symbolTableEntry* symTable, int prime, const char* varName)
@@ -288,10 +373,74 @@ void printVar(char* mem, struct symbolTableEntry* symTable, int prime, const cha
 			printf("%s = %s\n", varName, ((char*) &mem[symTable[indexOfSymbol].offset]));
 		else if (symTable[indexOfSymbol].type == INT)
 			printf("%s = %d\n", varName,  mem[symTable[indexOfSymbol].offset]);
+		else if (symTable[indexOfSymbol].type == BST)
+		{
+			printTreeNode(mem, ((struct bstNode*) &mem[symTable[indexOfSymbol].offset]));
+			printf("\n");
+		}
 		else
 			printf("ERROR: Type is not CHAR or INT\n");
 	}
 	else
 		printf("ERROR: Symbol not found.\n");
 }
+// Input: Relevant data structures, prime, value of node to insert
+// Output: If there is room in the memspace, the node is added to the BST. 
+void bstInsert(char* mem, struct symbolTableEntry* symTable, struct heapEntry* freeHeap, int prime, const char* rootName,  int value)
+{
+	int indexOfRoot = 0;
+	indexOfRoot = hashTableSearch(symTable, prime, rootName);
 
+	if(indexOfRoot != -1 && symTable[indexOfRoot].type == 2)
+	{
+		struct heapEntry topOfHeap = heapExtractMax(freeHeap);
+		
+		if(topOfHeap.blockSize >= 12)
+		{
+			//Place the variable in the memspace
+			((struct bstNode*) &mem[topOfHeap.offset])->key = value; 
+			((struct bstNode*) &mem[topOfHeap.offset])->left = -1; 
+			((struct bstNode*) &mem[topOfHeap.offset])->right = -1; 
+
+			//Set it as a child of the BST
+			int insertIndex = symTable[indexOfRoot].offset;
+			int foundFlag = 0;
+			int leftChild = 0;
+			int rightChild = 0;
+
+			while(foundFlag == 0)
+			{
+				leftChild = ((struct bstNode*) &mem[insertIndex])->left;
+				rightChild = ((struct bstNode*) &mem[insertIndex])->right;
+				if(value < ((struct bstNode*) &mem[insertIndex])->key) //Node belongs in left tree
+					if(leftChild == -1)
+					{
+						((struct bstNode*) &mem[insertIndex])->left = topOfHeap.offset;
+						foundFlag = 1;	
+					}
+					else
+						insertIndex = leftChild;
+				else if(value > ((struct bstNode*) &mem[insertIndex])->key) //Node belongs in right tree
+				{
+					if(rightChild == -1)
+					{
+						((struct bstNode*) &mem[insertIndex])->right = topOfHeap.offset;
+						foundFlag = 1;	
+					}
+					else
+						insertIndex = rightChild;
+				}
+			}
+
+			//Update the free heap
+			maxHeapInsert(freeHeap, topOfHeap.blockSize - 12, topOfHeap.offset + 12);
+		}	
+		else
+		{
+			maxHeapInsert(freeHeap, topOfHeap.blockSize, topOfHeap.offset);	
+			printf("ERROR: Not enough space to allocate variable.\n");
+		}
+	}
+	else
+		printf("ERROR: Can only insert into BST.\n");
+}
