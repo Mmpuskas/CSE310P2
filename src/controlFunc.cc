@@ -14,9 +14,16 @@ void map(char* mem, int memLen, struct symbolTableEntry* symTable, int tableLen)
 	for(int i = 0; i < tableLen; i++)
 		if(symTable[i].type == 1)
 		{
-			for(int j = symTable[i].offset; j < symTable[i].offset + symTable[i].noBytes - 1; j++)
-				typesToDisplay[j] = 1;	
-			typesToDisplay[symTable[i].offset + symTable[i].noBytes - 1] = 3;
+			int adjustedLen = symTable[i].noBytes;
+			if(adjustedLen % 4 != 0)
+				adjustedLen += (4 - (adjustedLen % 4));
+			for(int j = symTable[i].offset; j < symTable[i].offset + adjustedLen; j++)
+			{
+				if(j > 0 && mem[j] == 0 && mem[j-1] != 0)
+					typesToDisplay[j] = 3;
+				else
+					typesToDisplay[j] = 1;	
+			}
 		}
 	
 	printf(KCYN "       | 0  1  2  3  | 4  5  6  7  | 8  9  A  B  | C  D  E  F  |" RESET);
