@@ -1,0 +1,129 @@
+8
+13
+125
+allocate CHAR s1 500 "fail"
+allocate CHAR s1 20 " a"
+allocate CHAR s2 4 "b "
+allocate CHAR s3 5 " c "
+allocate CHAR s4 8 " d d "
+allocate CHAR s5 4 ""
+allocate CHAR s6 16 "           "
+map
+allocate INT i1 5
+allocate INT i2 7
+map
+allocate CHAR s7 500 "fail"
+allocate BST b1 10
+map
+allocate BST b2 5
+map
+add x s1
+add s1 x
+add x b1
+add b1 x
+add x x
+add x y
+add x 3
+add x i1
+add i1 x
+add s1 b1
+add b1 s1
+add s1 s1
+add s1 s2
+add s1 3
+add i1 s1
+add s1 i1
+add b1 b1
+add b1 b2
+add b1 3
+add i1 b1
+add b1 i1
+add i1 i1
+add i1 i2
+add i1 51
+print i1
+map
+strcat x i1
+strcat i1 x
+strcat x b1
+strcat b1 x
+strcat x x
+strcat x y
+strcat x " a"
+strcat x s1
+strcat s1 x
+strcat i1 b1
+strcat b1 i1
+strcat i1 i1
+strcat i1 i2
+strcat i1 "a "
+strcat s1 i1
+strcat i1 s1
+strcat b1 b1
+strcat b1 b2
+strcat b1 " a "
+strcat i1 b1
+strcat b1 i1
+strcat s1 s1
+map
+strcat s1 s2
+map
+strcat s1 ""
+map
+strcat s1 " "
+map
+strcat s1 "1 "
+map
+strcat s1 " 2"
+map
+strcat s1 " 3 "
+map
+strcat s1 " 4 4 "
+map
+strcat s1 s5
+map
+strcat s1 s6
+map
+print s1
+map
+insert s1 1
+insert i1 1
+insert x 1
+insert b1 5
+map
+insert b1 2
+map
+insert b1 7
+map
+insert b2 10
+map
+insert b2 15
+map
+insert b2 12
+map
+print b1
+map
+print b2
+map
+free s3
+free i1
+free b1
+free x
+free s3
+free i1
+free b1
+map
+allocate CHAR s3 9 "realloc"
+map
+allocate INT i1 9
+map
+allocate INT i3 7
+map
+allocate INT i4 7
+map
+allocate INT i5 7
+map
+allocate INT i6 7
+map
+allocate INT hashFull 7
+map

@@ -38,12 +38,12 @@ void map(char* mem, int memLen, struct symbolTableEntry* symTable, int tableLen)
 
 		if(typesToDisplay[i] == 1 && mem[i] == 0)
 			printf("   ");
-		else if(typesToDisplay[i] == 1 || mem[i] == '~')
+		else if(typesToDisplay[i] == 1 || mem[i] == '_')
 			printf(KMAG "%-2c " RESET, mem[i]);	
 		else if(typesToDisplay[i] == 3)
 			printf(KMAG "\\0 " RESET);
 		else
-			printf(KMAG "%02X " RESET,(unsigned char) mem[i]);	
+			printf(KMAG "%02X " RESET, (unsigned char) mem[i]);	
 
 	}
 	printf(KCYN "|" RESET);
@@ -92,6 +92,8 @@ void myMallocChar(char* mem, struct symbolTableEntry* symTable, struct heapEntry
 			strcpy(((char*) &mem[topOfHeap.offset]), value);
 			mem[topOfHeap.offset + len] = STRTERM; //Null terminator
 		}
+		else
+			mem[topOfHeap.offset] = 0;
 
 		//Update the free heap
 		maxHeapInsert(freeHeap, topOfHeap.blockSize - adjustedLen, topOfHeap.offset + adjustedLen);
@@ -147,7 +149,7 @@ void freeBST(char* mem, struct heapEntry* freeHeap, int indexInMem)
 
 	//Re-write the free space in mem
 	for(int i = indexInMem; i < indexInMem+12; i++)
-		mem[i] = '~';
+		mem[i] = '_';
 
 }
 // Input: Pointer to memspace, pointer to symbol table, pointer to freespace heap, prime number being used, var name
@@ -179,7 +181,7 @@ void myFree(char* mem, struct symbolTableEntry* symTable, struct heapEntry* free
 
 			//Re-write the free space in mem
 			for(int i = indexInMem; i < indexInMem + sizeInMem; i++)
-				mem[i] = '~';
+				mem[i] = '_';
 
 			//Remove from the symbol table
 			hashTableRemove(symTable, prime, varName);

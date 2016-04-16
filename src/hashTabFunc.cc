@@ -52,7 +52,7 @@ void hashTableInsert(struct symbolTableEntry* symTable, int prime, char const* s
 		symTable[index].noBytes = bytes;
 	}		
 	else
-		printf("ERROR: Symbol table is full.");
+		printf("ERROR: Symbol table is full.\n");
 
 }
 
@@ -69,11 +69,11 @@ void hashTableRemove(struct symbolTableEntry* symTable, int prime, char const* s
 		if(symTable[index].type != -1)
 			symTable[index].type = -2;
 		else
-			printf("ERROR: Symbol not found");
+			printf("ERROR: Symbol not found\n");
 	
 	}
 	else
-		printf("ERROR: Table is empty");
+		printf("ERROR: Table is empty\n");
 }
 
 // Input: Symbol table to search in, prime number to hash by, symbol to search for
@@ -104,7 +104,7 @@ int hashTableSearch(struct symbolTableEntry* symTable, int prime, char const* sy
 		}
 	}	
 	else
-		printf("ERROR: Symbol table is empty.");
+		printf("ERROR: Symbol table is empty.\n");
 
 	return indexOfSymbol;
 }
